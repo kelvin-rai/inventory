@@ -190,7 +190,7 @@ export default function Home() {
               Admin Login
             </Link>
             <Link
-              href="/auth/signin/salesperson"
+              href="/auth/signin/"
               className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               Salesperson Login
