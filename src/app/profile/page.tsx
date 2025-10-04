@@ -31,6 +31,8 @@ export default function Profile() {
     return 'AD';
   }, [userEmail]);
 
+
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -48,10 +50,20 @@ export default function Profile() {
         );
       }
 
-      // Load salesperson list
+      // If not authenticated, show empty list
+      if (!user) {
+        if (mounted) {
+          setRows([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      // Load only salespersons created by the current admin
       const { data, error } = await supabase
         .from('salespersons')
         .select('email, created_at, created_by')
+        .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
       if (mounted) {
@@ -69,6 +81,44 @@ export default function Profile() {
     };
   }, []);
 
+
+
+//   const handleAdd = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setError(null);
+
+//     const email = inputEmail.trim().toLowerCase();
+//     if (!emailRegex.test(email)) {
+//       setError('Enter a valid email.');
+//       return;
+//     }
+//     if (rows.some((r) => r.email === email)) {
+//       setError('Email already exists.');
+//       return;
+//     }
+
+//     setAdding(true);
+//     // Insert or update on conflict (unique on email)
+//     const { data, error } = await supabase
+//       .from('salespersons')
+//       .upsert([{ email }], { onConflict: 'email' })
+//       .select('email, created_at, created_by')
+//       .single();
+
+//     if (error) {
+//       setError(error.message);
+//     } else if (data) {
+//       setRows((prev) => {
+//         const without = prev.filter((r) => r.email !== email);
+//         return [{ ...data, email: data.email.toLowerCase() }, ...without];
+//       });
+//       setInputEmail('');
+//     }
+//     setAdding(false);
+//   };
+
+
+  // ...existing code...
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -84,10 +134,19 @@ export default function Profile() {
     }
 
     setAdding(true);
-    // Insert or update on conflict (unique on email)
+    // Ensure we have a logged-in user
+    const { data: authRes, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !authRes?.user) {
+      setError('Not authenticated.');
+      setAdding(false);
+      return;
+    }
+    const uid = authRes.user.id;
+
+    // Upsert with created_by so it passes RLS
     const { data, error } = await supabase
       .from('salespersons')
-      .upsert([{ email }], { onConflict: 'email' })
+      .upsert([{ email, created_by: uid }], { onConflict: 'email' })
       .select('email, created_at, created_by')
       .single();
 
@@ -102,6 +161,8 @@ export default function Profile() {
     }
     setAdding(false);
   };
+// ...existing code...
+
 
   const handleDelete = async (email: string) => {
     setError(null);

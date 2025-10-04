@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/SupabaseClient";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { FaGoogle, FaFacebook, FaGithub } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,14 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const LogoutUser = async() => {
+    const user = await supabase.auth.getUser();
+    if(user){
+      await supabase.auth.signOut();
+      toast.success("Signed out existing user");
+    }
+  }
 
 
   const handleMagicLinkLogin = async ({ email }: { email: string }) => {

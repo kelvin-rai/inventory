@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/SupabaseClient';
+import { useAuthStore } from '@/store/auth';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -10,17 +12,65 @@ const navLinks = [
   { href: '/profile', label: 'Profile' },
 ];
 
-const accessLinks = [
-  { href: '/auth/signin', label: 'Admin Login' },
-  { href: '/auth/signin/salesperson', label: 'Salesperson Login' },
-];
-
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  const { isLoggedIn, setUser, clear } = useAuthStore();
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user ?? null;
+      if (!mounted) return;
+      setUser(
+        user
+          ? {
+              id: user.id,
+              email: user.email ?? null,
+              avatarUrl:
+                (user.user_metadata?.avatar_url as string) ||
+                (user.user_metadata?.picture as string) ||
+                null,
+            }
+          : null
+      );
+    })();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      setUser(
+        user
+          ? {
+              id: user.id,
+              email: user.email ?? null,
+              avatarUrl:
+                (user.user_metadata?.avatar_url as string) ||
+                (user.user_metadata?.picture as string) ||
+                null,
+            }
+          : null
+      );
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [setUser]);
 
   const isActive = (href: string) =>
     pathname === href || (href !== '/' && pathname?.startsWith(href));
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    clear();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200/70 bg-white/80 backdrop-blur">
@@ -31,7 +81,7 @@ export default function Navbar() {
             KE
           </span>
           <span className="text-base font-semibold tracking-tight">
-            Sales Tracker
+            Afrinventory
           </span>
         </Link>
 
@@ -54,19 +104,21 @@ export default function Navbar() {
           </div>
           <div className="h-5 w-px bg-gray-200" />
           <div className="flex items-center gap-3">
-            {accessLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`rounded-md px-3 py-2 text-sm transition-colors ${
-                  isActive(l.href)
-                    ? 'text-emerald-600 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
               >
-                {l.label}
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+              >
+                Login
               </Link>
-            ))}
+            )}
           </div>
         </div>
 
@@ -97,9 +149,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile panel */}
-      <div
-        className={`md:hidden ${open ? 'block' : 'hidden'} border-t border-gray-200 bg-white`}
-      >
+      <div className={`md:hidden ${open ? 'block' : 'hidden'} border-t border-gray-200 bg-white`}>
         <div className="mx-auto max-w-7xl px-4 py-3 md:px-6">
           <div className="flex flex-col gap-2">
             {navLinks.map((l) => (
@@ -119,20 +169,25 @@ export default function Navbar() {
           </div>
           <div className="my-3 h-px w-full bg-gray-200" />
           <div className="flex flex-col gap-2">
-            {accessLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className={`rounded-md px-2 py-2 text-sm ${
-                  isActive(l.href)
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+            {isLoggedIn ? (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
+                className="rounded-md border border-gray-300 bg-white px-2 py-2 text-left text-sm font-medium text-gray-800 hover:bg-gray-50"
               >
-                {l.label}
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/auth/signin"
+                onClick={() => setOpen(false)}
+                className="rounded-md bg-emerald-600 px-2 py-2 text-sm font-semibold text-white"
+              >
+                Login
               </Link>
-            ))}
+            )}
           </div>
         </div>
       </div>
