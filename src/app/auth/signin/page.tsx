@@ -28,7 +28,7 @@ const LoginPage = () => {
         email: email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/profile`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/profile`,
         },
       });
 
@@ -55,7 +55,7 @@ const LoginPage = () => {
     const {data, error} = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/profile`
+        redirectTo: `${window.location.origin}/profile`
       }
     });
 
