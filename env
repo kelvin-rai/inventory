@@ -1,0 +1,4 @@
+GOOGLE_LOGIN_REDIRECT="https://pdbiickmalvrildfjovl.supabase.co/auth/v1/callback"
+
+NEXT_PUBLIC_SUPABASE_URL="https://pdbiickmalvrildfjovl.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkYmlpY2ttYWx2cmlsZGZqb3ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDE4OTgsImV4cCI6MjA3NTA3Nzg5OH0.OLXgzKYx5r3-XYugHh0HCWm7P1afVY9D4wAHeXVic80"
