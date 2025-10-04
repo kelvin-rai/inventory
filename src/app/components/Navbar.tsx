@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/SupabaseClient';
 import { useAuthStore } from '@/store/auth';
+import Image from 'next/image';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -77,9 +78,14 @@ export default function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-emerald-500 to-sky-500 text-white font-bold">
-            KE
-          </span>
+          <Image
+            src="/logo.png"
+            alt="Afrinventory logo"
+            width={52}
+            height={52}
+            priority
+            className="h-12 w-12 rounded-md object-contain"
+          />
           <span className="text-base font-semibold tracking-tight">
             Afrinventory
           </span>
